@@ -1,0 +1,77 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# MLflow Helm values – community-charts/mlflow 1.8.1
+# Target: local kind cluster
+# Prerequisites (created by Terraform before this Helm install):
+#   - namespace "mlflow"
+#   - secret "mlflow-secrets"
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Backend store (PostgreSQL) ────────────────────────────────────────────────
+backendStore:
+  databaseMigration: true
+  databaseConnectionCheck: true
+
+  postgres:
+    enabled: true
+    host: mlflow-postgresql
+    port: 5432
+    database: mlflow
+    user: mlflow
+    # Fixed password – matches postgresql.auth.password below to avoid
+    # race conditions between Terraform secret creation and Bitnami init.
+    password: "mlflow"
+    driver: "psycopg2"
+
+# ── Artifact store ────────────────────────────────────────────────────────────
+artifactRoot:
+  proxiedArtifactStorage: true
+  defaultArtifactRoot: "/mlartifacts"
+
+# ── Embedded PostgreSQL (Bitnami sub-chart) ───────────────────────────────────
+postgresql:
+  enabled: true
+  auth:
+    username: mlflow
+    password: "mlflow"
+    database: mlflow
+  primary:
+    persistence:
+      enabled: true
+      size: 2Gi
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+# ── MLflow server ─────────────────────────────────────────────────────────────
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# ── Service ───────────────────────────────────────────────────────────────────
+service:
+  enabled: true
+  type: NodePort
+  port: 5000
+  nodePort: 30082
+
+# ── Ingress (disabled – use NodePort or port-forward) ────────────────────────
+ingress:
+  enabled: false
+
+# ── Auth (disabled for local dev) ────────────────────────────────────────────
+auth:
+  enabled: false
+
+serviceAccount:
+  create: true
+

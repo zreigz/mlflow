@@ -84,11 +84,11 @@ spec:
     name: mlflow
     namespace: default
   helm:
-    version: "2.x.x"
+    version: "1.8.1"
     chart: mlflow
     release: mlflow
     ignoreHooks: false
-    url: https://charts.bitnami.com/bitnami
+    url: https://community-charts.github.io/helm-charts
     valuesFiles:
       - mlflow.yaml
   imports:
