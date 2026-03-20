@@ -67,3 +67,29 @@ resource "kubernetes_manifest" "mlflow" {
   }
 }
 
+# ── Flask server secret key (required by the chart; bypasses the Helm hook) ───
+# The chart deployment mounts this secret as MLFLOW_FLASK_SERVER_SECRET_KEY.
+# Secret name is hard-coded in the chart as <release>-flask-server-secret-key.
+
+resource "kubernetes_manifest" "flask_secret" {
+  manifest = {
+    apiVersion = "v1"
+    kind       = "Secret"
+    type       = "Opaque"
+    metadata = {
+      name      = "mlflow-flask-server-secret-key"
+      namespace = var.namespace
+      labels = {
+        "app.kubernetes.io/managed-by" = "terraform"
+        "app.kubernetes.io/name"       = "mlflow"
+      }
+    }
+    data = {
+      MLFLOW_FLASK_SERVER_SECRET_KEY = base64encode(random_password.mlflow_secret_key.result)
+    }
+  }
+
+  field_manager {
+    force_conflicts = true
+  }
+}

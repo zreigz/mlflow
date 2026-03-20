@@ -41,10 +41,10 @@ replicaCount: 1
 resources:
   requests:
     cpu: 100m
-    memory: 256Mi
+    memory: 512Mi
   limits:
     cpu: 500m
-    memory: 512Mi
+    memory: 1536Mi
 
 # ── Service ───────────────────────────────────────────────────────────────────
 # nodePort is not in the chart schema; use type: NodePort for a random port
