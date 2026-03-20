@@ -6,14 +6,6 @@ metadata:
 spec:
   handle: mgmt
 ---
-apiVersion: deployments.plural.sh/v1alpha1
-kind: GitRepository
-metadata:
-  name: mlflow
-  namespace: default
-spec:
-  url: https://github.com/zreigz/mlflow.git
----
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -53,15 +45,13 @@ spec:
   actor: lukasz@plural.sh
   configuration:
     version: "1.8"
-  repositoryRef:
-    name: mlflow
-    namespace: default
   clusterRef:
     name: existing
     namespace: default
   git:
     ref: main
     folder: terraform
+    url: https://github.com/zreigz/mlflow.git
   jobSpec:
     namespace: default
     serviceAccount: full-access
@@ -79,10 +69,6 @@ spec:
     enforceNamespace: true
   namespace: mlflow
   name: mlflow
-  repositoryRef:
-    kind: GitRepository
-    name: mlflow
-    namespace: default
   helm:
     version: "1.8.1"
     chart: mlflow
@@ -100,6 +86,7 @@ spec:
   git:
     ref: main
     folder: helm
+    url: https://github.com/zreigz/mlflow.git
   clusterRef:
     name: existing
     namespace: default
