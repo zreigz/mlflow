@@ -1,26 +1,15 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # MLflow Helm values – community-charts/mlflow 1.8.1
 # Target: local kind cluster
-# Prerequisites (created by Terraform before this Helm install):
-#   - namespace "mlflow"
-#   - secret "mlflow-secrets"
 # ─────────────────────────────────────────────────────────────────────────────
 
-# ── Backend store (PostgreSQL) ────────────────────────────────────────────────
+# ── Backend store ─────────────────────────────────────────────────────────────
+# databaseMigration/databaseConnectionCheck apply regardless of DB mode.
+# When postgresql.enabled=true the chart auto-wires the connection string;
+# backendStore.postgres is for external Postgres only (schema mutually exclusive).
 backendStore:
   databaseMigration: true
   databaseConnectionCheck: true
-
-  postgres:
-    enabled: true
-    host: mlflow-postgresql
-    port: 5432
-    database: mlflow
-    user: mlflow
-    # Fixed password – matches postgresql.auth.password below to avoid
-    # race conditions between Terraform secret creation and Bitnami init.
-    password: "mlflow"
-    driver: "psycopg2"
 
 # ── Artifact store ────────────────────────────────────────────────────────────
 artifactRoot:
@@ -58,11 +47,12 @@ resources:
     memory: 512Mi
 
 # ── Service ───────────────────────────────────────────────────────────────────
+# nodePort is not in the chart schema; use type: NodePort for a random port
+# or access via: kubectl port-forward svc/mlflow -n mlflow 5000:5000
 service:
   enabled: true
   type: NodePort
   port: 5000
-  nodePort: 30082
 
 # ── Ingress (disabled – use NodePort or port-forward) ────────────────────────
 ingress:
@@ -74,4 +64,3 @@ auth:
 
 serviceAccount:
   create: true
-
