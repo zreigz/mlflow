@@ -17,12 +17,15 @@ locals {
 }
 
 provider "kubernetes" {
-  # In-cluster: reads the service-account token and CA cert mounted by Kubernetes.
-  # Locally (e.g. Docker without a mounted service account): in_cluster is false
-  # and the provider falls back to ~/.kube/config automatically.
+  # In-cluster: use the service-account token and CA cert mounted by Kubernetes.
+  # Locally (e.g. Docker / dev): use the kubeconfig file.
+  # Setting any of host/token/ca explicitly to a non-null value causes the
+  # provider to skip kubeconfig auto-detection, so config_path must be set
+  # explicitly when running outside a pod.
   host                   = local.in_cluster ? "https://kubernetes.default.svc" : null
   cluster_ca_certificate = local.in_cluster ? file("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt") : null
   token                  = local.in_cluster ? file("/var/run/secrets/kubernetes.io/serviceaccount/token") : null
+  config_path            = local.in_cluster ? null : pathexpand("~/.kube/config")
 }
 
 # ── Random secrets ────────────────────────────────────────────────────────────
