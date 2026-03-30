@@ -11,12 +11,18 @@ terraform {
   }
 }
 
+locals {
+  # fileexists() never throws — safe to use as an in-cluster guard.
+  in_cluster = fileexists("/var/run/secrets/kubernetes.io/serviceaccount/token")
+}
+
 provider "kubernetes" {
-  # Explicit in-cluster configuration: reads the service-account token and CA
-  # cert that Kubernetes mounts into every pod automatically.
-  host                   = "https://kubernetes.default.svc"
-  cluster_ca_certificate = file("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
-  token                  = file("/var/run/secrets/kubernetes.io/serviceaccount/token")
+  # In-cluster: reads the service-account token and CA cert mounted by Kubernetes.
+  # Locally (e.g. Docker without a mounted service account): in_cluster is false
+  # and the provider falls back to ~/.kube/config automatically.
+  host                   = local.in_cluster ? "https://kubernetes.default.svc" : null
+  cluster_ca_certificate = local.in_cluster ? file("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt") : null
+  token                  = local.in_cluster ? file("/var/run/secrets/kubernetes.io/serviceaccount/token") : null
 }
 
 # ── Random secrets ────────────────────────────────────────────────────────────
