@@ -55,7 +55,8 @@ spec:
   manageState: true
   actor: lukasz@plural.sh
   configuration:
-    version: "1.8"
+    version: "sha-6697302-terraform-1.8"
+    image: "ghcr.io/pluralsh/harness"
   clusterRef:
     name: existing
     namespace: infra
